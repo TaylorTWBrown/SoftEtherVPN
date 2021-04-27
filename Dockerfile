@@ -3,12 +3,21 @@ FROM alpine:latest as prep
 LABEL maintainer="Tomohisa Kusano <siomiz@gmail.com>" \
       contributors="See CONTRIBUTORS file <https://github.com/siomiz/SoftEtherVPN/blob/master/CONTRIBUTORS>"
 
-ENV BUILD_VERSION=master
+ENV BUILD_VERSION=master \
+    CPU_FEATURES_VERSION=master \
+    CPU_FEATURES_VERIFY=4AEE18F83AFDEB23
 
 RUN wget https://github.com/SoftEtherVPN/SoftEtherVPN/archive/master.tar.gz \
     && mkdir -p /usr/local/src \
     && tar -x -C /usr/local/src/ -f ${BUILD_VERSION}.tar.gz \
     && rm ${BUILD_VERSION}.tar.gz
+
+RUN apk add git gnupg \
+    && gpg --keyserver hkp://keys.gnupg.net --recv-keys ${CPU_FEATURES_VERIFY} \
+    && git clone https://github.com/google/cpu_features.git /usr/local/src/SoftEtherVPN-${BUILD_VERSION}/src/Mayaqua/3rdparty/cpu_features \
+    && cd /usr/local/src/SoftEtherVPN-${BUILD_VERSION}/src/Mayaqua/3rdparty/cpu_features \
+    && git checkout ${CPU_FEATURES_VERSION} \
+    && cd -
 
 FROM alpine:latest as build
 
